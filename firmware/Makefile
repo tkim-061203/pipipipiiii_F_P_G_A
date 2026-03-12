@@ -52,7 +52,7 @@ $(BOOT_DUMP): $(BOOT_ELF)
 # 2. APPLICATION FIRMWARE  (loaded into App BRAM @ 0x0001_0000)
 # -------------------------------------------------------
 # List your application source files here:
-APP_SRCS   = app_crt0.S ../scripts/vivado/firmware.c
+APP_SRCS   = app_crt0.S firmware.c
 APP_LD     = firmware.ld
 APP_ELF    = firmware.elf
 APP_BIN    = firmware.bin
