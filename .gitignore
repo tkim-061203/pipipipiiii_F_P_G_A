@@ -35,3 +35,8 @@
 /synth.log
 /synth.v
 .*.swp
+/firmware/bootloader.bin
+/firmware/bootloader.elf
+/firmware/bootloader.hex
+scripts/vivado/*.log
+scripts/vivado/*.jou

@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.2 (lin64) Build 5239630 Fri Nov 08 22:34:34 MST 2024
-| Date         : Thu Mar 12 22:40:22 2026
+| Date         : Sat Mar 14 12:33:18 2026
 | Host         : minhanh-VMware-Virtual-Platform running 64-bit Ubuntu 24.04.3 LTS
 | Command      : report_utilization -cells [get_cells u_jambu] -file report_util_tinyjambu.txt
 | Design       : system
@@ -69,9 +69,9 @@ Table of Contents
 +--------------------------------------------+------+-------+------------+-----------+-------+
 |                  Site Type                 | Used | Fixed | Prohibited | Available | Util% |
 +--------------------------------------------+------+-------+------------+-----------+-------+
-| Slice                                      |  417 |     0 |          0 |     15850 |  2.63 |
-|   SLICEL                                   |  325 |     0 |            |           |       |
-|   SLICEM                                   |   92 |     0 |            |           |       |
+| Slice                                      |  439 |     0 |          0 |     15850 |  2.77 |
+|   SLICEL                                   |  340 |     0 |            |           |       |
+|   SLICEM                                   |   99 |     0 |            |           |       |
 | LUT as Logic                               | 1140 |     0 |          0 |     63400 |  1.80 |
 |   using O5 output only                     |    0 |       |            |           |       |
 |   using O6 output only                     |  911 |       |            |           |       |
@@ -86,10 +86,10 @@ Table of Contents
 |     using O6 output only                   |    0 |       |            |           |       |
 |     using O5 and O6                        |    0 |       |            |           |       |
 | Slice Registers                            |  939 |     0 |          0 |    126800 |  0.74 |
-|   Register driven from within the Slice    |  370 |       |            |           |       |
-|   Register driven from outside the Slice   |  569 |       |            |           |       |
-|     LUT in front of the register is unused |  334 |       |            |           |       |
-|     LUT in front of the register is used   |  235 |       |            |           |       |
+|   Register driven from within the Slice    |  374 |       |            |           |       |
+|   Register driven from outside the Slice   |  565 |       |            |           |       |
+|     LUT in front of the register is unused |  312 |       |            |           |       |
+|     LUT in front of the register is used   |  253 |       |            |           |       |
 | Unique Control Sets                        |   16 |       |          0 |     15850 |  0.10 |
 +--------------------------------------------+------+-------+------------+-----------+-------+
 * * Note: Available Control Sets calculated as Slice * 1, Review the Control Sets Report for more information regarding control sets.
