@@ -1,192 +1,125 @@
-PicoRV32 - A Size-Optimized RISC-V CPU
-======================================
+# PicoSoC with Lightweight Cryptographic Accelerators
 
-PicoRV32 is a CPU core that implements the [RISC-V RV32IMC Instruction Set](http://riscv.org/).
-It can be configured as RV32E, RV32I, RV32IC, RV32IM, or RV32IMC core, and optionally
-contains a built-in interrupt controller.
+This repository provides a complete System-on-Chip (SoC) based on the **PicoRV32** RISC-V CPU, featuring high-speed hardware accelerators for **TinyJAMBU**, **Xoodyak**, and **GIFT-COFB**. The design is optimized for area-constrained ASIC implementations using the **OpenLane2** flow.
 
-PicoRV32 is free and open hardware licensed under the [ISC license](http://en.wikipedia.org/wiki/ISC_license)
-(a license similar in terms to the MIT license or the 2-clause BSD license).
+---
 
-Table of Contents
------------------
+## 1. Project Overview
 
-- [Features and Typical Applications](#features-and-typical-applications)
-- [Core Variations](#core-variations)
-- [Verilog Module Parameters](#verilog-module-parameters)
-- [Interface Specifications](#interface-specifications)
-    - [Native Memory Interface](#native-memory-interface)
-    - [Look-Ahead Interface](#look-ahead-interface)
-    - [Pico Co-Processor Interface (PCPI)](#pico-co-processor-interface-pcpi)
-    - [RISC-V Formal Interface (RVFI)](#risc-v-formal-interface-rvfi)
-- [Custom Instructions for IRQ Handling](#custom-instructions-for-irq-handling)
-- [Performance and Utilization](#performance-and-utilization)
-- [Development Environment](#development-environment)
-- [Verification and Testing](#verification-and-testing)
-- [Example: PicoSoC](#example-picosoc)
-- [Files in this Repository](#files-in-this-repository)
+The project extends the standard PicoSoC architecture by integrating a dedicated **Crypto Layer** on the system bus. This allows the PicoRV32 core to offload intensive cryptographic operations to hardware, significantly improving performance and energy efficiency compared to software-only implementations.
 
+### Key Components
+- **CPU**: PicoRV32 (RV32I) - A size-optimized RISC-V implementation.
+- **Interconnect**: Unified memory-mapped interface (Valid-Ready protocol).
+- **Memory**: 4 KB Boot BRAM, 64 KB Application BRAM.
+- **Crypto Accelerators**:
+  - **TinyJAMBU**: AEAD (Authenticated Encryption with Associated Data).
+  - **Xoodyak**: Area-optimized Keyed-only AEAD (Hash mode removed for ASIC efficiency).
+  - **GIFT-COFB**: NIST Lightweight Cryptography (LWC) finalist algorithm.
+- **Peripherals**: 115200 Baud UART, SD Card SPI Master, GPIO.
 
-Features and Typical Applications
----------------------------------
+---
 
-- **Small Footprint**: 750-2000 LUTs in Xilinx 7-Series architecture.
-- **High Frequency**: 250-450 MHz on Xilinx 7-Series FPGAs.
-- **Flexible Interfaces**: Native memory interface, AXI4-Lite master, or Wishbone master.
-- **Optional Extensions**: support for M (Multiply/Divide) and C (Compressed) extensions.
-- **Custom IRQ Support**: Simple custom instructions for efficient interrupt handling.
-- **Formal Verification**: Built-in support for the RVFI formal interface.
+## 2. System Architecture
 
-This CPU is meant to be used as an auxiliary processor in FPGA designs and ASICs. Due
-to its high fmax, it can be integrated into most existing designs without crossing
-clock domains.
+### Memory Map
 
+The system uses a 32-bit address space. All crypto cores are memory-mapped for easy software interaction.
 
-Core Variations
----------------
-
-The core exists in three main variations:
-
-- **`picorv32`**: The base core with a simple native memory interface.
-- **`picorv32_axi`**: The core with an integrated AXI4-Lite master interface.
-- **`picorv32_wb`**: The core with an integrated Wishbone B4/pipelined master interface.
-
-A separate `picorv32_axi_adapter` module is also provided to bridge between the native memory interface and AXI4.
-
-
-Verilog Module Parameters
--------------------------
-
-| Parameter | Default | Description |
+| Base Address | Peripheral | Description |
 | :--- | :--- | :--- |
-| `ENABLE_COUNTERS` | 1 | Enable `RDCYCLE[H]`, `RDTIME[H]`, and `RDINSTRET[H]` |
-| `ENABLE_COUNTERS64` | 1 | Enable 64-bit versions of the counters |
-| `ENABLE_REGS_16_31` | 1 | Enable registers x16..x31 (set to 0 for RV32E) |
-| `ENABLE_REGS_DUALPORT` | 1 | Use dual-port register file (faster but larger) |
-| `LATCHED_MEM_RDATA` | 0 | Set to 1 if `mem_rdata` is stable after transaction |
-| `TWO_STAGE_SHIFT` | 1 | Shift in stages of 4 and 1 bit (smaller/slower) |
-| `BARREL_SHIFTER` | 0 | Use a barrel shifter (larger/faster) |
-| `TWO_CYCLE_COMPARE` | 0 | Add FF stage to comparator longest path |
-| `TWO_CYCLE_ALU` | 0 | Add FF stage to ALU data path |
-| `COMPRESSED_ISA` | 0 | Enable support for RISC-V Compressed (C) extension |
-| `CATCH_MISALIGN` | 1 | Enable circuitry for catching misaligned memory access |
-| `CATCH_ILLINSN` | 1 | Enable circuitry for catching illegal instructions |
-| `ENABLE_PCPI` | 0 | Enable external Pico Co-Processor Interface |
-| `ENABLE_MUL` | 0 | Internal PCPI Multiply support (requires `picorv32_pcpi_mul`) |
-| `ENABLE_FAST_MUL` | 0 | Internal PCPI Single-cycle Multiply support |
-| `ENABLE_DIV` | 0 | Internal PCPI Division support (requires `picorv32_pcpi_div`) |
-| `ENABLE_IRQ` | 0 | Enable custom Interrupt Controller and instructions |
-| `ENABLE_IRQ_QREGS` | 1 | Enable `getq` and `setq` instructions for IRQ handlers |
-| `ENABLE_IRQ_TIMER` | 1 | Enable the `timer` instruction |
-| `ENABLE_TRACE` | 0 | Enable the `trace_valid` and `trace_data` output ports |
-| `REGS_INIT_ZERO` | 0 | Initialize register file to zero (for simulation/formal) |
-| `PROGADDR_RESET` | `32'h0` | The start address of the program |
-| `PROGADDR_IRQ` | `32'h10` | The start address of the interrupt handler |
-| `STACKADDR` | `32'hffffffff` | Initial stack pointer value (if not `0xffffffff`) |
+| `0x0000_0000` | **Boot ROM** | 4 KB Bootloader (Software pre-loaded) |
+| `0x0001_0000` | **Main RAM** | 64 KB Application Memory |
+| `0x1000_0000` | **GPIO/UART** | Control register at `0x00`, UART at `0x04-0x10` |
+| `0x3000_0000` | **TinyJAMBU** | AEAD Accelerator |
+| `0x4000_0000` | **Xoodyak** | AEAD Accelerator (Optimized) |
+| `0x5000_0000` | **GIFT-COFB** | AEAD Accelerator |
+| `0x6000_0000` | **SD Master** | SPI Interface for secondary storage |
 
+---
 
-Interface Specifications
-------------------------
+## 3. Cryptographic Hardware Accelerators
 
-### Native Memory Interface
+### TinyJAMBU AEAD
+TinyJAMBU is a lightweight permutation-based AEAD. The hardware implementation supports high-frequency operation and provides a simple interface for Key, Nonce, and Data processing.
+- **Data Width**: 128-bit Key, 96-bit Nonce.
+- **Control**: `JB_CTRL` defines AD and Message lengths for automatic processing.
 
-The native interface is a simple valid-ready interface:
+### Xoodyak (Optimized Keyed-Only)
+The Xoodyak core has been significantly modified for ASIC area reduction:
+- **Optimization**: All Hash-related state and logic were removed. Only the **Keyed AEAD** mode is supported.
+- **Interface**: Improved 2-bit `sel_type` control:
+  - `0x01` (binary `01`): Encrypt
+  - `0x02` (binary `10`): Decrypt
+- **Control Register (`XD_CTRL`)**:
+  - `[17:16]`: Mode Selector
+  - `[12:8]`: Associated Data Length (0-16 bytes)
+  - `[4:0]`: Message/Data Length (0-16 bytes)
 
-- `mem_valid` (output): Core initiates a transfer.
-- `mem_instr` (output): High if the transfer is an instruction fetch.
-- `mem_ready` (input): Peer acknowledges the transfer.
-- `mem_addr` [31:0] (output): The address for the transfer.
-- `mem_wdata` [31:0] (output): Data to be written.
-- `mem_wstrb` [3:0] (output): Write enable byte mask.
-- `mem_rdata` [31:0] (input): Data read from memory.
+### GIFT-COFB
+A block-cipher based AEAD finalist in the NIST LWC competition.
+- **Block Size**: 128-bit.
+- **Interface**: Uses an ACK/REQ handshake mechanism to ensure data is processed correctly within the GIFT permutation cycles.
 
-### Look-Ahead Interface
+---
 
-The Look-Ahead interface provides info about the next transfer one clock cycle earlier:
+## 4. Software Development Stack
 
-- `mem_la_read`, `mem_la_write`, `mem_la_addr`, `mem_la_wdata`, `mem_la_wstrb`.
+### Firmware Implementation
+The system firmware (`scripts/vivado/firmware.c`) provides a hardware abstraction layer (HAL) for the accelerators.
 
-### Pico Co-Processor Interface (PCPI)
+Example usage for Xoodyak:
+```c
+// Setup Key and Nonce
+XD(0x00) = key_low; ... XD(0x0C) = key_high;
+XD(0x10) = nonce_low; ... XD(0x1C) = nonce_high;
 
-PCPI allows implementing custom instructions in external cores. If an illegal instruction is encountered and PCPI is enabled, the core asserts `pcpi_valid` and passes the instruction and operand values.
+// Process 9B AD and 14B Data
+XD_CTRL = (1u << 16) | (9u << 8) | 14u;
+while (!(XD_STATUS & 0x02)); // Wait for Done bit
+```
 
-### RISC-V Formal Interface (RVFI)
+### Simulation Flow
+The project uses **Icarus Verilog** for high-speed functional verification.
+```bash
+cd scripts/vivado/
+make sim_system
+```
+This command performs the following:
+1. Compiles the RISC-V firmware using `riscv64-unknown-elf-gcc`.
+2. Converts the binary to a `.hex` file.
+3. Runs the top-level SoC simulation.
 
-When `RISCV_FORMAL` is defined, the core provides RVFI ports for formal verification or instruction tracing. See [riscv-formal](https://github.com/YosysHQ/riscv-formal/blob/master/docs/rvfi.md) for details.
+---
 
+## 5. ASIC Flow (OpenLane2)
 
-Custom Instructions for IRQ Handling
-------------------------------------
+The repository is structured to support a complete digital backend flow.
 
-The following custom instructions are supported when `ENABLE_IRQ` is set. They are encoded under the `custom0` opcode.
+### Directory Structure
+- `openlane/designs/picosoc/`: Design-specific files.
+- `openlane/designs/picosoc/src/`: Synchronized RTL source files.
+- `openlane/sw/`: ASIC-ready firmware binaries.
 
-- **`getq rd, qs`**: Move from q-register to general-purpose register.
-- **`setq qd, rs`**: Move from general-purpose register to q-register.
-- **`retirq`**: Return from interrupt and re-enable interrupts.
-- **`maskirq rd, rs`**: Write new IRQ mask and read old one.
-- **`waitirq rd`**: Wait until an interrupt is pending.
-- **`timer rd, rs`**: Configure the down-counter timer.
+### Synthesis Configuration
+The `config.json` file is tuned for the SkyWater 130nm process (sky130):
+- **Clock**: Target 10ns (100 MHz).
+- **Core Area**: Optimized for high utilization.
+- **Pin Mapping**: GPIO, UART, and SPI pins are mapped to standard chip I/Os.
 
-IRQ 0 is the Timer, IRQ 1 is EBREAK/Illegal Instruction, and IRQ 2 is Bus Error.
+---
 
+## 6. Files in the Repository
 
-Performance and Utilization
----------------------------
+- `picorv32.v`: The base RISC-V core.
+- `picosoc/`: Hardware modules (Wrappers and Crypto RTL).
+- `scripts/vivado/`: Standard simulation and FPGA scripts.
+- `openlane/`: ASIC flow and synchronized releases.
+- `README.md`: This document.
 
-The average CPI is approximately 4. Dhrystone results: 0.516 DMIPS/MHz.
+---
 
-### Xilinx 7-Series LUTs:
-- **Small**: ~760 LUTs (min features)
-- **Regular**: ~920 LUTs (default)
-- **Large**: ~2000 LUTs (all features, PCPI, IRQ, MUL/DIV)
-
-
-Development Environment
------------------------
-
-### Software Toolchain
-
-Build the RISC-V GNU toolchain for a pure RV32I target:
-
-    make download-tools
-    make build-tools
-
-### Nix Support
-
-A `shell.nix` file is provided. Just run `nix-shell` to enter an environment with all dependencies.
-
-### FuseSoC Support
-
-Use `picorv32.core` with [FuseSoC](https://github.com/olofk/fusesoc) for management and build automation.
-
-
-Verification and Testing
-------------------------
-
-- **Icarus Verilog**: Run `make test`.
-- **Verilator**: Run `make test_verilator`.
-- **Wishbone**: Run `make test_wb`.
-- **Formal**: Run `make check` (requires Yosys and SMT solvers).
-
-
-Example: PicoSoC
-----------------
-
-The `picosoc/` directory contains a simple SoC implementation that executes code directly from SPI flash. It supports the iCE40-HX8K Breakout Board and iCEBreaker Board.
-
-
-Files in this Repository
-------------------------
-
-- `picorv32.v`: The core implementation (contains CPU and PCPI modules).
-- `Makefile`: Build and test automation.
-- `picorv32.core`: FuseSoC core description.
-- `shell.nix`: Nix environment configuration.
-- `testbench.v`: Standard testbench.
-- `testbench_wb.v`: Wishbone testbench.
-- `testbench.cc`: Verilator testbench.
-- `firmware/`: Basic test firmware.
-- `tests/`: ISA-level tests from riscv-tests.
-- `dhrystone/`: Dhrystone benchmark implementation.
-- `picosoc/`: PicoSoC example.
-- `scripts/`: various synthesis and helper scripts.
+## 7. Credits and License
+- **PicoRV32**: Clifford Wolf (ISC License).
+- **PicoSoC**: Clifford Wolf (ISC License).
+- **Crypto Accelerators**: Integrated and optimized for this project.
