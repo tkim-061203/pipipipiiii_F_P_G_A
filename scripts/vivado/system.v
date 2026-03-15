@@ -192,6 +192,9 @@ module system (
     wire         jb_valid, jb_done;
 
     tinyjambu_core u_jambu (
+`ifdef USE_POWER_PINS
+        .VPWR(VPWR), .VGND(VGND),
+`endif
         .clk        (clk),      .rst_n      (resetn),
         .ena        (jb_ena),   .sel_type   (jb_sel_type),
         .key        (jb_key),   .nonce      (jb_nonce),
@@ -221,6 +224,9 @@ module system (
     wire         xd_valid, xd_done;
 
     xoodyakcore u_xoodyak (
+`ifdef USE_POWER_PINS
+        .VPWR(VPWR), .VGND(VGND),
+`endif
         .clk        (clk),      .rst_n      (resetn),
         .ena        (xd_ena),   .restart    (1'b0),
         .sel_type   (xd_sel_type),
@@ -254,6 +260,9 @@ module system (
     wire         gc_data_out_valid;
 
     cofb_core u_giftcofb (
+`ifdef USE_POWER_PINS
+        .VPWR(VPWR), .VGND(VGND),
+`endif
         .clk          (clk),           .rst_n        (resetn),
         .start        (gc_start),      .decrypt_mode (gc_decrypt_mode),
         .key          (gc_key),        .nonce        (gc_nonce),

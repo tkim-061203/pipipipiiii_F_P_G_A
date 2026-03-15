@@ -9,6 +9,7 @@ This repository provides a complete System-on-Chip (SoC) based on the **PicoRV32
 The project extends the standard PicoSoC architecture by integrating a dedicated **Crypto Layer** on the system bus. This allows the PicoRV32 core to offload intensive cryptographic operations to hardware, significantly improving performance and energy efficiency compared to software-only implementations.
 
 ### Key Components
+
 - **CPU**: PicoRV32 (RV32I) - A size-optimized RISC-V implementation.
 - **Interconnect**: Unified memory-mapped interface (Valid-Ready protocol).
 - **Memory**: 4 KB Boot BRAM, 64 KB Application BRAM.
@@ -41,12 +42,16 @@ The system uses a 32-bit address space. All crypto cores are memory-mapped for e
 ## 3. Cryptographic Hardware Accelerators
 
 ### TinyJAMBU AEAD
+
 TinyJAMBU is a lightweight permutation-based AEAD. The hardware implementation supports high-frequency operation and provides a simple interface for Key, Nonce, and Data processing.
+
 - **Data Width**: 128-bit Key, 96-bit Nonce.
 - **Control**: `JB_CTRL` defines AD and Message lengths for automatic processing.
 
 ### Xoodyak (Optimized Keyed-Only)
+
 The Xoodyak core has been significantly modified for ASIC area reduction:
+
 - **Optimization**: All Hash-related state and logic were removed. Only the **Keyed AEAD** mode is supported.
 - **Interface**: Improved 2-bit `sel_type` control:
   - `0x01` (binary `01`): Encrypt
@@ -57,7 +62,9 @@ The Xoodyak core has been significantly modified for ASIC area reduction:
   - `[4:0]`: Message/Data Length (0-16 bytes)
 
 ### GIFT-COFB
+
 A block-cipher based AEAD finalist in the NIST LWC competition.
+
 - **Block Size**: 128-bit.
 - **Interface**: Uses an ACK/REQ handshake mechanism to ensure data is processed correctly within the GIFT permutation cycles.
 
@@ -66,9 +73,11 @@ A block-cipher based AEAD finalist in the NIST LWC competition.
 ## 4. Software Development Stack
 
 ### Firmware Implementation
+
 The system firmware (`scripts/vivado/firmware.c`) provides a hardware abstraction layer (HAL) for the accelerators.
 
 Example usage for Xoodyak:
+
 ```c
 // Setup Key and Nonce
 XD(0x00) = key_low; ... XD(0x0C) = key_high;
@@ -80,12 +89,16 @@ while (!(XD_STATUS & 0x02)); // Wait for Done bit
 ```
 
 ### Simulation Flow
+
 The project uses **Icarus Verilog** for high-speed functional verification.
+
 ```bash
 cd scripts/vivado/
 make sim_system
 ```
+
 This command performs the following:
+
 1. Compiles the RISC-V firmware using `riscv64-unknown-elf-gcc`.
 2. Converts the binary to a `.hex` file.
 3. Runs the top-level SoC simulation.
@@ -97,12 +110,15 @@ This command performs the following:
 The repository is structured to support a complete digital backend flow.
 
 ### Directory Structure
+
 - `openlane/designs/picosoc/`: Design-specific files.
 - `openlane/designs/picosoc/src/`: Synchronized RTL source files.
 - `openlane/sw/`: ASIC-ready firmware binaries.
 
 ### Synthesis Configuration
+
 The `config.json` file is tuned for the SkyWater 130nm process (sky130):
+
 - **Clock**: Target 10ns (100 MHz).
 - **Core Area**: Optimized for high utilization.
 - **Pin Mapping**: GPIO, UART, and SPI pins are mapped to standard chip I/Os.
@@ -120,6 +136,7 @@ The `config.json` file is tuned for the SkyWater 130nm process (sky130):
 ---
 
 ## 7. Credits and License
+
 - **PicoRV32**: Clifford Wolf (ISC License).
 - **PicoSoC**: Clifford Wolf (ISC License).
 - **Crypto Accelerators**: Integrated and optimized for this project.
