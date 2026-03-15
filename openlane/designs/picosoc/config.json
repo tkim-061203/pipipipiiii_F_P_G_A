@@ -1,0 +1,19 @@
+{
+    "DESIGN_NAME": "system",
+    "VERILOG_FILES": [
+        "dir::src/*.v"
+    ],
+    "CLOCK_PERIOD": 40,
+    "CLOCK_PORT": "clk",
+    "CLOCK_NET": "clk",
+    "FP_CORE_UTIL": 30,
+    "SYNTH_STRATEGY": "AREA 0",
+    "FP_PDN_MULTIPLE_GND_NETS": 1,
+    "FP_PDN_MULTIPLE_VCC_NETS": 1,
+    "MACROS": {
+        "tinyjambu_core": {},
+        "xoodyakcore": {},
+        "cofb_core": {}
+    },
+    "pdk": "sky130A"
+}
