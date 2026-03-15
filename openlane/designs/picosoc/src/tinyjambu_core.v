@@ -19,6 +19,10 @@
 `timescale 1ns/1ps
 
 module tinyjambu_core (
+`ifdef USE_POWER_PINS
+    inout wire          VPWR,
+    inout wire          VGND,
+`endif
     input  wire         clk,
     input  wire         rst_n,
 

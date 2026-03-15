@@ -3,6 +3,7 @@
 // Matches functionality of xoodoo.vhd
 //--------------------------------------------------------------------------------
 
+`timescale 1ns / 1ps
 module xoodoo(
     clk_i,
     rst_i,

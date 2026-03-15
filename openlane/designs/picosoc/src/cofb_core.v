@@ -1,9 +1,14 @@
+`timescale 1ns / 1ps
 // ============================================================
 // COFB CORE - Multi-block FSM (khớp encrypt.c)
 // Giao diện req/ack handshake cho multi-block AD và MSG
 // ============================================================
 
 module cofb_core (
+`ifdef USE_POWER_PINS
+    inout wire          VPWR,
+    inout wire          VGND,
+`endif
     input  wire         clk,
     input  wire         rst_n,
     input  wire         start,
@@ -143,7 +148,6 @@ module cofb_core (
         .start     (gift_start),
         .plaintext (gift_in_with_offset),
         .key       (key),
-        .busy      (),
         .done      (gift_done),
         .ciphertext(gift_out)
     );

@@ -3,6 +3,7 @@
 // - Verilog-2001
 // - Bit-exact C reference
 // ============================================================
+`timescale 1ns / 1ps
 module gift128_subcells (
     input  wire [31:0] S0,
     input  wire [31:0] S1,

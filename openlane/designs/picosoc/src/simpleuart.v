@@ -17,6 +17,7 @@
  *
  */
 
+`timescale 1ns / 1ps
 module simpleuart #(parameter integer DEFAULT_DIV = 1) (
 	input clk,
 	input resetn,

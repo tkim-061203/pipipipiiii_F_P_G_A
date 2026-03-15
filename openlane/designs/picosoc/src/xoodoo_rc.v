@@ -2,6 +2,7 @@
 // Round constant computation module
 // Matches xoodoo_rc.vhd functionality
 //--------------------------------------------------------------------------------
+`timescale 1ns / 1ps
 module xoodoo_rc(
     state_in,
     state_out,

@@ -1,19 +1,40 @@
 {
     "DESIGN_NAME": "system",
     "VERILOG_FILES": [
-        "dir::src/*.v"
+        "dir::src/system.v",
+        "dir::src/picorv32.v",
+        "dir::src/simpleuart.v",
+        "dir::src/simple_spi_master.v",
+        "dir::src/sky130_sram_16kbyte_1rw1r_32x4096_8_stub.v",
+        "dir::src/tinyjambu_core_stub.v",
+        "dir::src/xoodyakcore_stub.v",
+        "dir::src/cofb_core_stub.v"
     ],
     "CLOCK_PERIOD": 40,
     "CLOCK_PORT": "clk",
     "CLOCK_NET": "clk",
-    "FP_CORE_UTIL": 30,
+    "FP_SIZING": "absolute",
+    "DIE_AREA": "0 0 2500 2500",
+    "FP_CORE_UTIL": 35,
+    "ERROR_ON_LINTER_ERRORS": false,
     "SYNTH_STRATEGY": "AREA 0",
-    "FP_PDN_MULTIPLE_GND_NETS": 1,
-    "FP_PDN_MULTIPLE_VCC_NETS": 1,
+    "MAX_THREADS": 2,
     "MACROS": {
-        "tinyjambu_core": {},
-        "xoodyakcore": {},
-        "cofb_core": {}
-    },
-    "pdk": "sky130A"
+        "tinyjambu_core": {
+            "gds": "dir::macros/tinyjambu_core.gds",
+            "lef": "dir::macros/tinyjambu_core.lef"
+        },
+        "xoodyakcore": {
+            "gds": "dir::macros/xoodyakcore.gds",
+            "lef": "dir::macros/xoodyakcore.lef"
+        },
+        "cofb_core": {
+            "gds": "dir::macros/cofb_core.gds",
+            "lef": "dir::macros/cofb_core.lef"
+        },
+        "sky130_sram_16kbyte_1rw1r_32x4096_8": {
+            "gds": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.gds",
+            "lef": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.lef"
+        }
+    }
 }

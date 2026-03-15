@@ -40,3 +40,19 @@
 /firmware/bootloader.hex
 scripts/vivado/*.log
 scripts/vivado/*.jou
+
+# OpenLane: Ignore all run contents except 'final'
+openlane/designs/*/runs/*/*
+!openlane/designs/*/runs/*/final/
+
+# Ignore everything in OpenLane runs
+openlane/designs/*/runs/*
+
+# But do not ignore the directory entries for the runs (so we can see 'final' inside)
+!openlane/designs/*/runs/*/
+
+# Ignore everything inside the run directories
+openlane/designs/*/runs/*/*
+
+# Except the 'final' folder
+!openlane/designs/*/runs/*/final/
