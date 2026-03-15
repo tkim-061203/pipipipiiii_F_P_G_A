@@ -5,6 +5,7 @@
         "dir::src/picorv32.v",
         "dir::src/simpleuart.v",
         "dir::src/simple_spi_master.v",
+        "dir::src/sky130_sram_4kbyte_1rw1r_32x1024_8_stub.v",
         "dir::src/sky130_sram_16kbyte_1rw1r_32x4096_8_stub.v",
         "dir::src/tinyjambu_core_stub.v",
         "dir::src/xoodyakcore_stub.v",
@@ -32,9 +33,27 @@
             "gds": "dir::macros/cofb_core.gds",
             "lef": "dir::macros/cofb_core.lef"
         },
+        "sky130_sram_4kbyte_1rw1r_32x1024_8": {
+            "gds": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.gds",
+            "lef": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.lef"
+        },
         "sky130_sram_16kbyte_1rw1r_32x4096_8": {
             "gds": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.gds",
             "lef": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.lef"
         }
-    }
+    },
+    "MACRO_PLACEMENT": {
+        "u_boot_sram": "50 50 N",
+        "u_app_sram": "50 800 N",
+        "u_jambu": "50 1800 N",
+        "u_xoodyak": "850 1650 N",
+        "u_giftcofb": "1650 1650 N"
+    },
+    "FP_PDN_MACRO_HOOKS": [
+        "u_jambu VPWR VGND VPWR VGND",
+        "u_xoodyak VPWR VGND VPWR VGND",
+        "u_giftcofb VPWR VGND VPWR VGND",
+        "u_boot_sram vccd1 vssd1 VPWR VGND",
+        "u_app_sram vccd1 vssd1 VPWR VGND"
+    ]
 }

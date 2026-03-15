@@ -1,23 +1,25 @@
-// Blackbox stub for xoodyakcore
-(* blackbox *)
+`default_nettype none
+/* Blackbox stub for xoodyakcore hardened macro */
 module xoodyakcore (
 `ifdef USE_POWER_PINS
-    VPWR,
-    VGND,
+    inout  wire          VPWR,
+    inout  wire          VGND,
 `endif
-    clk, resetn,
-    xd_key, xd_nonce, xd_ad, xd_data_in, xd_tag_in,
-    xd_ad_length, xd_data_length, xd_sel_type, xd_ena,
-    xd_data_out, xd_tag_out,
-    xd_done, xd_valid
+    input  wire          clk,
+    input  wire          rst_n,
+    input  wire          ena,
+    input  wire          restart,
+    input  wire [1:0]    sel_type,
+    input  wire [127:0]  key,
+    input  wire [127:0]  nonce,
+    input  wire [127:0]  ad,
+    input  wire [4:0]    ad_length,
+    input  wire [4:0]    data_length,
+    input  wire [127:0]  data_in,
+    input  wire [127:0]  tag_in,
+    output wire          valid,
+    output wire [127:0]  tag,
+    output wire [127:0]  data_out,
+    output wire          done
 );
-`ifdef USE_POWER_PINS
-    inout VPWR, VGND;
-`endif
-    input clk, resetn, xd_ena;
-    input [127:0] xd_key, xd_nonce, xd_ad, xd_data_in, xd_tag_in;
-    input [4:0]   xd_ad_length, xd_data_length;
-    input [1:0]   xd_sel_type;
-    output [127:0] xd_data_out, xd_tag_out;
-    output xd_done, xd_valid;
 endmodule
