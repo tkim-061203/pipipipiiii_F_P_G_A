@@ -1,0 +1,175 @@
+================================================================================
+  HƯỚNG DẪN CÀI ĐẶT OPENLANE 2 + SKY130 PDK
+  Ngày tạo: 2026-03-16
+  Môi trường: Ubuntu (nix-shell)
+================================================================================
+
+[1] CÀI ĐẶT OPENLANE 2 (Nix-based)
+--------------------------------------------------------------------------------
+Tham khảo: https://openlane2.readthedocs.io/en/latest/getting_started/common/nix_installation/index.html
+
+1.1  Cài Nix package manager (nếu chưa có):
+     $ sh <(curl -L https://nixos.org/nix/install) --daemon
+
+1.2  Clone OpenLane 2:
+     $ cd ~
+     $ git clone https://github.com/efabless/openlane2.git
+     $ cd openlane2
+
+1.3  Vào nix-shell:
+     $ nix-shell
+
+1.4  Kiểm tra OpenLane 2 hoạt động:
+     [nix-shell]$ openlane --version
+     [nix-shell]$ openlane --smoke-test
+
+
+[2] CÀI ĐẶT SKY130 PDK QUA VOLARE
+--------------------------------------------------------------------------------
+OpenLane 2 sử dụng volare (có sẵn trong nix-shell) để quản lý PDK.
+
+2.1  Kiểm tra volare có sẵn:
+     [nix-shell]$ which volare
+
+     Kết quả mong đợi:
+     /nix/store/.../bin/volare
+
+2.3  Xác nhận PDK đã cài:
+     $ ls ~/.volare/volare/sky130/versions/
+
+     Kết quả mong đợi:
+     0fe599b2afb6708d281543108caf8310912f54af (2024.08.17)
+
+2.4  Cấu trúc PDK đã cài:
+     ~/.volare/volare/sky130/versions/<commit>/
+     ├── sky130A/
+     │   ├── libs.ref/
+     │   │   ├── sky130_fd_sc_hd/
+     │   │   ├── sky130_fd_sc_hvl/
+     │   │   ├── sky130_fd_io/
+     │   │   ├── sky130_fd_pr/
+     │   │   ├── sky130_ml_xx_hd/
+     │   │   └── sky130_sram_macros/    <-- OpenRAM SRAM macros
+     │   └── libs.tech/
+     └── sky130B/
+         ├── libs.ref/  (tương tự sky130A)
+         └── libs.tech/
+
+
+[3] THIẾT LẬP BIẾN MÔI TRƯỜNG
+--------------------------------------------------------------------------------
+
+3.1  Thiết lập PDK_ROOT và PDK:
+     $ export PDK_ROOT=~/.volare/volare/sky130/versions/......
+     $ export PDK=sky130A
+
+3.2  Thêm vào ~/.bashrc để lưu vĩnh viễn:
+     $ cat >> ~/.bashrc << 'EOF'
+
+     # === PDK cho OpenLane 2 ===
+     export PDK_ROOT=~/.volare/volare/sky130/versions/.......
+     export PDK=sky130A
+     export PATH="$HOME/.local/bin:$PATH"
+     EOF
+
+     $ source ~/.bashrc
+
+3.3  Xác nhận:
+     $ echo $PDK_ROOT
+     $ echo $PDK
+
+     LƯU Ý: Trong nix-shell, các biến có thể bị override.
+     Cần export lại sau khi vào nix-shell nếu cần.
+
+
+[4] KIỂM TRA SKY130_SRAM_MACROS
+--------------------------------------------------------------------------------
+
+4.1  Kiểm tra sky130_sram_macros có tồn tại:
+     $ ls $PDK_ROOT/sky130A/libs.ref/sky130_sram_macros/
+
+     Kết quả mong đợi: gds  lef  lib  mag  maglef  spice  verilog
+
+4.2  Liệt kê SRAM macros có sẵn:
+     $ ls $PDK_ROOT/sky130A/libs.ref/sky130_sram_macros/lef/
+
+     Kết quả (PDK version 0fe599b2):
+     - sky130_sram_1kbyte_1rw1r_32x256_8.lef
+     - sky130_sram_1kbyte_1rw1r_8x1024_8.lef
+     - sky130_sram_2kbyte_1rw1r_32x512_8.lef
+     - sram_1rw1r_32_256_8_sky130.lef
+
+     LƯU Ý: Phiên bản PDK này KHÔNG có sky130_sram_4kbyte.
+     Cần dùng OpenRAM compiler để generate (xem file 02).
+
+
+[5] CÁCH KHAI BÁO MACRO TRONG OPENLANE 2 (KHÁC V1)
+--------------------------------------------------------------------------------
+OpenLane 2 KHÔNG dùng EXTRA_LEFS, EXTRA_GDS_FILES, EXTRA_LIBS.
+Thay vào đó dùng MACROS dictionary trong config.json.
+
+Ví dụ config.json với SRAM macro:
+
+{
+  "DESIGN_NAME": "my_top",
+  "VERILOG_FILES": "dir::src/*.v",
+  "CLOCK_PORT": "clk",
+  "CLOCK_PERIOD": 25.0,
+
+  "MACROS": {
+    "sky130_sram_2kbyte_1rw1r_32x512_8": {
+      "gds": ["dir::macro/sky130_sram_2kbyte_1rw1r_32x512_8.gds"],
+      "lef": ["dir::macro/sky130_sram_2kbyte_1rw1r_32x512_8.lef"],
+      "nl":  ["dir::macro/sky130_sram_2kbyte_1rw1r_32x512_8.v"],
+      "lib": {
+        "*": "dir::macro/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+      },
+      "instances": {
+        "u_sram0": {
+          "location": [100, 100],
+          "orientation": "N"
+        }
+      }
+    }
+  }
+}
+
+Tham khảo chi tiết:
+https://openlane2.readthedocs.io/en/latest/usage/using_macros.html
+
+
+[6] CHẠY OPENLANE 2
+--------------------------------------------------------------------------------
+
+6.1  Chạy flow:
+     [nix-shell]$ openlane config.json
+
+6.2  Xem kết quả:
+     [nix-shell]$ openlane --last-run --flow openinklayout config.json
+
+6.3  Cấu trúc thư mục output:
+     runs/RUN_<timestamp>/
+     ├── 01-verilator-lint/
+     ├── 05-yosys-synthesis/
+     ├── 10-openroad-floorplan/
+     ├── 12-odb-manualmacroplacement/
+     ├── ...
+     ├── final/
+     │   ├── gds/
+     │   ├── lef/
+     │   ├── def/
+     │   └── ...
+     └── resolved.json
+
+
+================================================================================
+  GHI CHÚ
+================================================================================
+- OpenLane v1 dùng flow.tcl        -> OpenLane 2 dùng openlane config.json
+- OpenLane v1 dùng EXTRA_LEFS      -> OpenLane 2 dùng MACROS dictionary
+- OpenLane v1 dùng MACRO_PLACEMENT_CFG -> OpenLane 2 dùng instances trong MACROS
+- OpenLane v1 dùng FP_PDN_MACRO_HOOKS -> OpenLane 2: power pins phải khớp với
+  standard cell library
+- PDK pre-built qua volare có thể KHÔNG bao gồm sky130_sram_4kbyte
+  -> Cần dùng OpenRAM compiler để generate (xem file 02)
+================================================================================

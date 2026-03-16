@@ -1,0 +1,75 @@
+================================================================================
+  HƯỚNG DẪN CÀI ĐẶT VÀ SỬ DỤNG OPENRAM
+  Ngày tạo: 2026-03-16
+  Mục tiêu: Generate SRAM macros cho Sky130
+================================================================================
+
+[1] CÀI ĐẶT OPENRAM
+--------------------------------------------------------------------------------
+1.1 Clone source code từ GitHub:
+    $ cd ~
+    $ git clone https://github.com/vlsida/OpenRAM.git
+    $ cd OpenRAM
+
+1.2 Cài đặt các dependencies (Python3, v.v.):
+    $ pip3 install -r requirements.txt
+
+1.3 Cài đặt các công cụ phụ trợ (yêu cầu để characterize):
+    - Ngspice (mô phỏng mạch)
+    - Magic (trình sửa đổi layout/GDS)
+    - Netgen (kiểm tra LVS)
+
+
+[2] THIẾT LẬP BIẾN MÔI TRƯỜNG
+--------------------------------------------------------------------------------
+Để OpenRAM và các script có thể chạy, bạn cần export các đường dẫn sau:
+
+2.1 Thêm vào ~/.bashrc hoặc chạy trực tiếp:
+    $ export OPENRAM_HOME="$HOME/OpenRAM/compiler"
+    $ export OPENRAM_TECH="$HOME/OpenRAM/technology"
+    $ export PYTHONPATH="$OPENRAM_HOME:$OPENRAM_TECH/sky130:$OPENRAM_TECH/sky130/custom"
+
+2.2 Xác nhận OpenRAM hoạt động:
+    $ python3 $OPENRAM_HOME/openram.py --help
+
+
+[3] SỬ DỤNG VỚI SKY130_SRAM_MACROS
+--------------------------------------------------------------------------------
+Trong thiết kế này, các cấu hình SRAM đã được tạo sẵn trong thư mục `configs`.
+
+3.1 Cấu trúc file cấu hình (.py):
+    - Định nghĩa word_size, num_words, write_size.
+    - Import và thực thi `sky130_sram_common.py`.
+
+3.2 Cách chạy qua Makefile:
+    $ cd openlane/designs/sky130_sram_macros
+    $ make sky130_sram_4kbyte_1rw_32x1024_8
+
+    LƯU Ý: Phải đảm bảo file `openlane/designs/openram.mk` trỏ đúng vào script
+    chính (openram.py hoặc bin/openram).
+
+
+[4] CÁC LỖI THƯỜNG GẶP
+--------------------------------------------------------------------------------
+4.1 "No rule to make target .../bin/openram":
+    - Xảy ra khi đường dẫn OPENRAM_COMPILER trong openram.mk bị sai.
+    - Sửa lại trong `openlane/designs/openram.mk` để trỏ vào `$OPENRAM_HOME/openram.py`.
+
+4.2 Lỗi PYTHONPATH:
+    - Nếu chạy OpenRAM báo thiếu module, hãy kiểm tra lại PYTHONPATH đã bao gồm 
+      thư mục `technology/sky130`.
+
+4.3 Lỗi PDK_ROOT:
+    - OpenRAM cần tìm thấy Sky130 PDK qua biến môi trường PDK_ROOT.
+
+
+[5] OUTPUT SAU KHI GENERATE
+--------------------------------------------------------------------------------
+Sau khi chạy thành công, một thư mục (ví dụ `sky130_sram_4kbyte_1rw_32x1024_8`) 
+sẽ được tạo ra với:
+- .gds: File layout vật lý.
+- .lef: File tóm tắt vật lý (cần cho Place & Route).
+- .v:   File Verilog model (cần cho Synthesis/Simulation).
+- .lib: File Timing/Power (cần cho Synthesis/STA).
+- .sp:  File Spice netlist.
+================================================================================
