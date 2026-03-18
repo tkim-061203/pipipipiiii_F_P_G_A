@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module double_half_block (
     input  [63:0] s,      
     output [63:0] d       

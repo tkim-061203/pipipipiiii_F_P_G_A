@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module pho1 (
     input  [127:0] Y_in,         // chaining value in
     input  [127:0] M_in,         // message / plaintext block

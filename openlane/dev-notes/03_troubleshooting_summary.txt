@@ -1,0 +1,62 @@
+================================================================================
+  NHẬT KÝ KHẮC PHỤC LỖI (TROUBLESHOOTING LOG)
+  Ngày tạo: 2026-03-16
+  Tóm tắt các bước đã thực hiện để thiết lập OpenRAM & Magic
+================================================================================
+
+[1] THIẾT LẬP FILE CẤU HÌNH (MAKEFILE)
+--------------------------------------------------------------------------------
+- Tạo file `openlane/designs/env.mk`: Chứa đường dẫn PDK_ROOT và PDK.
+- Tạo file `openlane/designs/openram.mk`: Định nghĩa trình biên dịch OpenRAM.
+- Sửa lỗi đường dẫn: Trỏ OPENRAM_COMPILER vào `$HOME/OpenRAM/sram_compiler.py` thay vì bin/openram.
+
+
+[2] CÀI ĐẶT MAGIC VLSI (LAYOUT TOOL)
+--------------------------------------------------------------------------------
+- Lỗi: Thiếu công cụ `magic` khi chạy OpenRAM.
+- Giải quyết: 
+    1. Cài đặt dependencies: `m4`, `tcsh`, `libx11-dev`, `tcl-dev`, `tk-dev`, v.v.
+    2. Sửa lỗi cú pháp GCC 14: 
+       - Lỗi typo trong `magic/commands/CmdLQ.c` (thiếu dấu đóng ngoặc).
+       - Dùng `sed` để sửa: `sed -i 's/FALSE);/FALSE));/g' CmdLQ.c`.
+    3. Biên dịch với cờ hiệu `-fpermissive` và `-std=gnu89` để tương thích code cũ.
+    4. Thêm Magic vào biến môi trường PATH trong `.bashrc`.
+
+
+[3] SỬA LỖI TERMINAL TRONG MAGIC (TXINPUT.C)
+--------------------------------------------------------------------------------
+- Lỗi: `termio.h` không tồn tại trên Ubuntu đời mới, dẫn đến lỗi biên dịch `ioctl`.
+- Giải quyết: Patch file `magic/textio/txInput.c` để sử dụng chuẩn `termios.h` hiện đại:
+    ```c
+    #include <sys/ioctl.h>
+    #include <termios.h>
+    #define termio termios
+    #define TCGETA TCGETS
+    #define TCSETAF TCSETSF
+    ```
+
+
+[4] CÀI ĐẶT NETGEN (LVS TOOL)
+--------------------------------------------------------------------------------
+- Lỗi: OpenRAM báo thiếu `netgen` để kiểm tra Layout vs Schematic.
+- Giải quyết: Cài đặt từ source code `git://opencircuitdesign.com/netgen`.
+
+
+[5] CẤU HÌNH OPENRAM CHO SKY130
+--------------------------------------------------------------------------------
+- Lỗi: `Total cols must be divisible by 2`. Mảng bitcell Sky130 yêu cầu số cột chẵn.
+- Giải quyết: Sửa trực tiếp trong file config của macro (ví dụ `configs/sky130_sram_4kbyte_1rw_32x1024_8.py`) để đảm bảo OpenRAM nhận diện được biến.
+- Thêm:
+    ```python
+    num_spare_cols = 1
+    num_spare_rows = 1
+    ```
+- Việc thêm cột dự phòng giúp tổng số cột (bao gồm replica bitline) trở thành số chẵn (256 + 1 rbl + 1 spare = 258).
+
+
+[6] TRẠNG THÁI HIỆN TẠI
+--------------------------------------------------------------------------------
+- Hệ thống đã có đủ: Magic, Netgen, OpenRAM.
+- Các file môi trường (.mk) đã cấu hình đúng đường dẫn.
+- Sẵn sàng chạy lệnh: `make sky130_sram_4kbyte_1rw_32x1024_8`.
+================================================================================

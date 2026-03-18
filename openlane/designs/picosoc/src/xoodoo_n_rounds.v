@@ -3,6 +3,7 @@
 // Uses Verilog generate to instantiate configurable number of rounds
 // roundPerCycle parameter controls unrolling (1, 2, 3, 4, 6, or 12)
 //--------------------------------------------------------------------------------
+`timescale 1ns / 1ps
 module xoodoo_n_rounds(
     state_in,
     state_out,

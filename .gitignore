@@ -40,3 +40,7 @@
 /firmware/bootloader.hex
 scripts/vivado/*.log
 scripts/vivado/*.jou
+openlane/designs/*/runs/*/*
+openlane/designs/*/runs/*
+!openlane/designs/*/runs/*/
+!openlane/designs/*/runs/*/final/

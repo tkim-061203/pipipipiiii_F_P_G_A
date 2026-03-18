@@ -8,6 +8,10 @@
 `timescale 1ns/1ps
 
 module xoodyakcore (    // Clock and Reset
+`ifdef USE_POWER_PINS
+    inout wire          VPWR,
+    inout wire          VGND,
+`endif
     input  wire         clk,
     input  wire         rst_n,              // Active low reset
 

@@ -1,7 +1,7 @@
 `timescale 1 ns / 1 ps
 // MEMORY MAP
 //   0x0000_0000 – 0x0000_0FFF  Boot BRAM  4 KB  (bootloader, RO)
-//   0x0001_0000 – 0x0001_FFFF  App  BRAM 64 KB  (loaded from SD)
+//   0x0001_0000 – 0x0001_FFFF  App  BRAM 16 KB  (loaded from SD)
 //   0x1000_0000                LED  out_byte     W
 //   0x1000_0004                UART TX Data      W
 //   0x1000_0008                UART RX Data      R
@@ -66,11 +66,15 @@ module system (
     output           sd_sck,
     output           sd_mosi,
     input            sd_miso
+`ifdef USE_POWER_PINS
+    , inout          VPWR,
+    inout            VGND
+`endif
 );
 
     parameter FAST_MEMORY = 1;
     parameter BOOT_SIZE   = 1024;   // 4 KB in words
-    parameter APP_SIZE    = 16384;  // 64 KB in words
+    parameter APP_SIZE    = 4096;  // 16 KB in words
 
     // --------------------------------------------------------
     // Power-on reset
@@ -305,15 +309,35 @@ module system (
         .mem_rdata  (mem_rdata),
         .mem_la_read(mem_la_read),  .mem_la_write(mem_la_write),
         .mem_la_addr(mem_la_addr),  .mem_la_wdata(mem_la_wdata),
-        .mem_la_wstrb(mem_la_wstrb)
+        .mem_la_wstrb(mem_la_wstrb),
+        /* Pico Co-Processor Interface (PCPI) */
+        .pcpi_valid (),             .pcpi_insn  (),
+        .pcpi_rs1   (),             .pcpi_rs2   (),
+        .pcpi_wr    (1'b0),         .pcpi_rd    (32'b0),
+        .pcpi_wait  (1'b0),         .pcpi_ready (1'b0),
+        /* IRQ Interface */
+        .irq        (32'b0),        .eoi        (),
+        /* Trace Interface */
+        .trace_valid(),             .trace_data ()
     );
 
-    // Boot BRAM  4 KB  — pre-loaded at synthesis, read-only
-    reg [31:0] boot_mem [0:BOOT_SIZE-1];
-    initial $readmemh("bootloader.hex", boot_mem);
+    // Boot SRAM  4 KB
+    wire [31:0] boot_sram_dout;
+    sky130_sram_4kbyte_1rw1r_32x1024_8 u_boot_sram (
+        `ifdef USE_POWER_PINS .vccd1(VPWR), .vssd1(VGND), `endif
+        .clk0(clk), .csb0(!(mem_la_addr < 32'h0000_1000)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb), .addr0(mem_la_addr[11:2]), .din0(mem_la_wdata), .dout0(boot_sram_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(10'b0), .dout1()
+    );
 
-    // App BRAM  64 KB  — written by bootloader at run-time
-    reg [31:0] app_mem  [0:APP_SIZE-1];
+    // App SRAM  16 KB
+    wire [31:0] app_sram_dout;
+    sky130_sram_16kbyte_1rw1r_32x4096_8 u_app_sram (
+        `ifdef USE_POWER_PINS .vccd1(VPWR), .vssd1(VGND), `endif
+        .clk0(clk), .csb0(!(mem_la_addr[31:16] == 16'h0001 && mem_la_addr[15:14] == 2'b00)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb), .addr0(mem_la_addr[13:2]), .din0(mem_la_wdata), .dout0(app_sram_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(12'b0), .dout1()
+    );
 
     reg [31:0] m_read_data;
     reg        m_read_en;
@@ -368,10 +392,10 @@ module system (
                 end
 
                 // ---- Default BRAM read (before peripheral override) ----
-                if (mem_la_addr < 32'h0001_0000)
-                    mem_rdata <= boot_mem[mem_la_addr >> 2];
-                else if (mem_la_addr[31:16] == 16'h0001)
-                    mem_rdata <= app_mem[(mem_la_addr - 32'h0001_0000) >> 2];
+                if (mem_la_addr < 32'h0000_1000)
+                    mem_rdata <= boot_sram_dout;
+                else if (mem_la_addr[31:16] == 16'h0001 && mem_la_addr[15:14] == 2'b00)
+                    mem_rdata <= app_sram_dout;
                 else
                     mem_rdata <= 32'h0000_0000;
 
@@ -423,12 +447,9 @@ module system (
 
                 // ---- WRITE ----
                 if (mem_la_write) begin
-                    // App BRAM (byte-enable)
+                    // App BRAM (Handled by Hard Macro)
                     if (mem_la_addr[31:16] == 16'h0001) begin
-                        if (mem_la_wstrb[0]) app_mem[(mem_la_addr-32'h0001_0000)>>2][ 7: 0] <= mem_la_wdata[ 7: 0];
-                        if (mem_la_wstrb[1]) app_mem[(mem_la_addr-32'h0001_0000)>>2][15: 8] <= mem_la_wdata[15: 8];
-                        if (mem_la_wstrb[2]) app_mem[(mem_la_addr-32'h0001_0000)>>2][23:16] <= mem_la_wdata[23:16];
-                        if (mem_la_wstrb[3]) app_mem[(mem_la_addr-32'h0001_0000)>>2][31:24] <= mem_la_wdata[31:24];
+                        // SRAM Macro handles write internally via web0 and wmask0
                     end else begin
                         case (mem_la_addr)
                             // LED
@@ -576,10 +597,10 @@ module system (
                 end
 
                 // Default BRAM read (registered, appears in mem_rdata next cycle)
-                if (mem_addr < 32'h0001_0000)
-                    m_read_data <= boot_mem[mem_addr >> 2];
-                else if (mem_addr[31:16] == 16'h0001)
-                    m_read_data <= app_mem[(mem_addr - 32'h0001_0000) >> 2];
+                if (mem_addr < 32'h0000_1000)
+                    m_read_data <= boot_sram_dout;
+                else if (mem_addr[31:16] == 16'h0001 && mem_addr[15:14] == 2'b00)
+                    m_read_data <= app_sram_dout;
                 else
                     m_read_data <= 32'h0000_0000;
                 mem_rdata <= m_read_data;
@@ -588,7 +609,7 @@ module system (
             (* parallel_case *)
             case (1)
                 // --- BRAM reads ---
-                mem_valid && !mem_ready && !mem_wstrb && (mem_addr < 32'h0002_0000):
+                mem_valid && !mem_ready && !mem_wstrb && (mem_addr < 32'h0000_1000 || (mem_addr[31:16] == 16'h0001 && mem_addr[15:14] == 2'b00)):
                     m_read_en <= 1;
                 // --- Peripheral reads ---
                 mem_valid && !mem_ready && !mem_wstrb && mem_addr==32'h1000_0008:
@@ -664,12 +685,8 @@ module system (
                 mem_valid && !mem_ready && !mem_wstrb && mem_addr==32'h5000_0074:
                     begin mem_rdata<=gc_tag_out[127:96]; mem_ready<=1; end
                 // --- WRITES ---
-                // App BRAM
-                mem_valid && !mem_ready && |mem_wstrb && mem_addr[31:16]==16'h0001: begin
-                    if (mem_wstrb[0]) app_mem[(mem_addr-32'h0001_0000)>>2][ 7: 0]<=mem_wdata[ 7: 0];
-                    if (mem_wstrb[1]) app_mem[(mem_addr-32'h0001_0000)>>2][15: 8]<=mem_wdata[15: 8];
-                    if (mem_wstrb[2]) app_mem[(mem_addr-32'h0001_0000)>>2][23:16]<=mem_wdata[23:16];
-                    if (mem_wstrb[3]) app_mem[(mem_addr-32'h0001_0000)>>2][31:24]<=mem_wdata[31:24];
+                // App SRAM (Handled by macro)
+                mem_valid && !mem_ready && |mem_wstrb && mem_addr[31:16]==16'h0001 && mem_addr[15:14] == 2'b00: begin
                     mem_ready<=1;
                 end
                 mem_valid && !mem_ready && |mem_wstrb && mem_addr==32'h1000_0000:
