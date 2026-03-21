@@ -1,0 +1,59 @@
+[2026-03-21 10:01:06.704995] |==============================================================================|
+[2026-03-21 10:01:06.705126] |=========                      OpenRAM v1.2.49                       =========|
+[2026-03-21 10:01:06.705163] |=========                                                            =========|
+[2026-03-21 10:01:06.705185] |=========               VLSI Design and Automation Lab               =========|
+[2026-03-21 10:01:06.705212] |=========        Computer Science and Engineering Department         =========|
+[2026-03-21 10:01:06.705231] |=========            University of California Santa Cruz             =========|
+[2026-03-21 10:01:06.705252] |=========                                                            =========|
+[2026-03-21 10:01:06.705270] |=========          Usage help: openram-user-group@ucsc.edu           =========|
+[2026-03-21 10:01:06.705291] |=========        Development help: openram-dev-group@ucsc.edu        =========|
+[2026-03-21 10:01:06.705312] |=========                See LICENSE for license info                =========|
+[2026-03-21 10:01:06.705331] |==============================================================================|
+[2026-03-21 10:01:06.705357] ** Start: 03/21/2026 10:01:06
+[2026-03-21 10:01:06.705386] Technology: sky130
+[2026-03-21 10:01:06.705407] Total size: 32768 bits
+[2026-03-21 10:01:06.705429] Word size: 32
+Words: 1024
+Banks: 1
+[2026-03-21 10:01:06.705451] RW ports: 1
+R-only ports: 0
+W-only ports: 0
+[2026-03-21 10:01:06.705473] DRC/LVS/PEX is only run on the top-level design to save run-time (inline_lvsdrc=True to do inline checking).
+[2026-03-21 10:01:06.705491] DRC/LVS/PEX is disabled (check_lvsdrc=True to enable).
+[2026-03-21 10:01:06.705512] Characterization is disabled (using analytical delay models) (analytical_delay=False to simulate).
+[2026-03-21 10:01:06.705529] Only generating nominal corner timing.
+[2026-03-21 10:01:06.705551] Words per row: 4
+[2026-03-21 10:01:06.705575] Output files are: 
+[2026-03-21 10:01:06.705596] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.lvs
+[2026-03-21 10:01:06.705615] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.sp
+[2026-03-21 10:01:06.705635] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.v
+[2026-03-21 10:01:06.705653] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.lib
+[2026-03-21 10:01:06.705673] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.py
+[2026-03-21 10:01:06.705691] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.html
+[2026-03-21 10:01:06.705711] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.log
+[2026-03-21 10:01:06.705729] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.lef
+[2026-03-21 10:01:06.705748] /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.gds
+[2026-03-21 10:35:07.847519] ** Submodules: 2041.1 seconds
+[2026-03-21 10:35:07.882466] ** Placement: 0.0 seconds
+[2026-03-21 11:13:28.708587] ** Routing: 2300.8 seconds
+[2026-03-21 11:13:28.765863] ** Verification: 0.0 seconds
+[2026-03-21 11:13:28.765950] ** SRAM creation: 4342.1 seconds
+[2026-03-21 11:13:28.765991] SP: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.sp
+[2026-03-21 11:13:29.340913] ** Spice writing: 0.6 seconds
+[2026-03-21 11:13:29.340988] DELAY: Writing stimulus...
+[2026-03-21 11:13:29.341199] ** DELAY: 0.0 seconds
+[2026-03-21 11:13:29.903904] GDS: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.gds
+[2026-03-21 11:13:31.579500] ** GDS: 1.7 seconds
+[2026-03-21 11:13:31.579595] LEF: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.lef
+[2026-03-21 11:13:31.594371] ** LEF: 0.0 seconds
+[2026-03-21 11:13:31.594415] LVS: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.lvs.sp
+[2026-03-21 11:13:32.142907] ** LVS writing: 0.5 seconds
+[2026-03-21 11:13:32.142991] LIB: Characterizing... 
+[2026-03-21 11:13:35.309343] ** Characterization: 3.2 seconds
+[2026-03-21 11:13:35.309563] Config: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.py
+[2026-03-21 11:13:35.309599] ** Config: 0.0 seconds
+[2026-03-21 11:13:35.315046] Datasheet: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.html
+[2026-03-21 11:13:35.316366] ** Datasheet: 0.0 seconds
+[2026-03-21 11:13:35.316417] Verilog: Writing to /home/nntkim/OpenRAM/macros/sky130_sram_4kb_drclvs/sky130_sram_4kbyte_1rw_32x1024_8.v
+[2026-03-21 11:13:35.316541] ** Verilog: 0.0 seconds
+[2026-03-21 11:13:35.320898] ** End: 4348.6 seconds

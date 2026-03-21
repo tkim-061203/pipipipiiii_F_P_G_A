@@ -6,7 +6,6 @@
         "dir::src/simpleuart.v",
         "dir::src/simple_spi_master.v",
         "dir::src/sky130_sram_4kbyte_1rw1r_32x1024_8_stub.v",
-        "dir::src/sky130_sram_16kbyte_1rw1r_32x4096_8_stub.v",
         "dir::src/tinyjambu_core_stub.v",
         "dir::src/xoodyakcore_stub.v",
         "dir::src/cofb_core_stub.v"
@@ -36,15 +35,14 @@
         "sky130_sram_4kbyte_1rw1r_32x1024_8": {
             "gds": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.gds",
             "lef": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.lef"
-        },
-        "sky130_sram_16kbyte_1rw1r_32x4096_8": {
-            "gds": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.gds",
-            "lef": "dir::macros/sky130_sram_16kbyte_1rw1r_32x4096_8.lef"
         }
     },
     "MACRO_PLACEMENT": {
         "u_boot_sram": "50 50 N",
-        "u_app_sram": "50 800 N",
+        "u_sram_1": "50 650 N",
+        "u_sram_2": "50 1200 N",
+        "u_sram_3": "1600 50 N",
+        "u_sram_4": "1600 650 N",
         "u_jambu": "50 1800 N",
         "u_xoodyak": "850 1650 N",
         "u_giftcofb": "1650 1650 N"
@@ -54,6 +52,9 @@
         "u_xoodyak VPWR VGND VPWR VGND",
         "u_giftcofb VPWR VGND VPWR VGND",
         "u_boot_sram vccd1 vssd1 VPWR VGND",
-        "u_app_sram vccd1 vssd1 VPWR VGND"
+        "u_sram_1 vccd1 vssd1 VPWR VGND",
+        "u_sram_2 vccd1 vssd1 VPWR VGND",
+        "u_sram_3 vccd1 vssd1 VPWR VGND",
+        "u_sram_4 vccd1 vssd1 VPWR VGND"
     ]
 }
