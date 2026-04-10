@@ -5,56 +5,343 @@
         "dir::src/picorv32.v",
         "dir::src/simpleuart.v",
         "dir::src/simple_spi_master.v",
-        "dir::src/sky130_sram_4kbyte_1rw1r_32x1024_8_stub.v",
+        "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8_stub.v",
         "dir::src/tinyjambu_core_stub.v",
         "dir::src/xoodyakcore_stub.v",
         "dir::src/cofb_core_stub.v"
     ],
-    "CLOCK_PERIOD": 40,
     "CLOCK_PORT": "clk",
     "CLOCK_NET": "clk",
+    "VDD_NETS": [
+        "VPWR"
+    ],
+    "GND_NETS": [
+        "VGND"
+    ],
+    "VDD_PIN": "VPWR",
+    "GND_PIN": "VGND",
     "FP_SIZING": "absolute",
-    "DIE_AREA": "0 0 2500 2500",
-    "FP_CORE_UTIL": 35,
-    "ERROR_ON_LINTER_ERRORS": false,
+    "DIE_AREA": [
+        0,
+        0,
+        4400,
+        6000
+    ],
+    "FP_CORE_UTIL": 15,
+    "FP_PDN_VPITCH": 160,
+    "FP_PDN_HPITCH": 160,
+    "FP_PDN_VOFFSET": 5,
+    "FP_PDN_HOFFSET": 5,
+    "FP_MACRO_HORIZONTAL_HALO": 10,
+    "FP_MACRO_VERTICAL_HALO": 10,
     "SYNTH_STRATEGY": "AREA 0",
-    "MAX_THREADS": 2,
     "MACROS": {
         "tinyjambu_core": {
-            "gds": "dir::macros/tinyjambu_core.gds",
-            "lef": "dir::macros/tinyjambu_core.lef"
+            "gds": [
+                "dir::macros/tinyjambu_core.gds"
+            ],
+            "lef": [
+                "dir::macros/tinyjambu_core.lef"
+            ],
+            "instances": {
+                "u_jambu": {
+                    "location": [
+                        1800,
+                        4900
+                    ],
+                    "orientation": "N"
+                }
+            },
+            "lib": {
+                "nom_tt_025C_1v80": [
+                    "dir::macros/tinyjambu_core__nom_tt_025C_1v80.lib"
+                ],
+                "nom_ss_100C_1v60": [
+                    "dir::macros/tinyjambu_core__nom_ss_100C_1v60.lib"
+                ],
+                "nom_ff_n40C_1v95": [
+                    "dir::macros/tinyjambu_core__nom_ff_n40C_1v95.lib"
+                ],
+                "min_tt_025C_1v80": [
+                    "dir::macros/tinyjambu_core__min_tt_025C_1v80.lib"
+                ],
+                "min_ss_100C_1v60": [
+                    "dir::macros/tinyjambu_core__min_ss_100C_1v60.lib"
+                ],
+                "min_ff_n40C_1v95": [
+                    "dir::macros/tinyjambu_core__min_ff_n40C_1v95.lib"
+                ],
+                "max_tt_025C_1v80": [
+                    "dir::macros/tinyjambu_core__max_tt_025C_1v80.lib"
+                ],
+                "max_ss_100C_1v60": [
+                    "dir::macros/tinyjambu_core__max_ss_100C_1v60.lib"
+                ],
+                "max_ff_n40C_1v95": [
+                    "dir::macros/tinyjambu_core__max_ff_n40C_1v95.lib"
+                ]
+            }
         },
         "xoodyakcore": {
-            "gds": "dir::macros/xoodyakcore.gds",
-            "lef": "dir::macros/xoodyakcore.lef"
+            "gds": [
+                "dir::macros/xoodyakcore.gds"
+            ],
+            "lef": [
+                "dir::macros/xoodyakcore.lef"
+            ],
+            "instances": {
+                "u_xoodyak": {
+                    "location": [
+                        1800,
+                        100
+                    ],
+                    "orientation": "N"
+                }
+            },
+            "lib": {
+                "nom_tt_025C_1v80": [
+                    "dir::macros/xoodyakcore__nom_tt_025C_1v80.lib"
+                ],
+                "nom_ss_100C_1v60": [
+                    "dir::macros/xoodyakcore__nom_ss_100C_1v60.lib"
+                ],
+                "nom_ff_n40C_1v95": [
+                    "dir::macros/xoodyakcore__nom_ff_n40C_1v95.lib"
+                ],
+                "min_tt_025C_1v80": [
+                    "dir::macros/xoodyakcore__min_tt_025C_1v80.lib"
+                ],
+                "min_ss_100C_1v60": [
+                    "dir::macros/xoodyakcore__min_ss_100C_1v60.lib"
+                ],
+                "min_ff_n40C_1v95": [
+                    "dir::macros/xoodyakcore__min_ff_n40C_1v95.lib"
+                ],
+                "max_tt_025C_1v80": [
+                    "dir::macros/xoodyakcore__max_tt_025C_1v80.lib"
+                ],
+                "max_ss_100C_1v60": [
+                    "dir::macros/xoodyakcore__max_ss_100C_1v60.lib"
+                ],
+                "max_ff_n40C_1v95": [
+                    "dir::macros/xoodyakcore__max_ff_n40C_1v95.lib"
+                ]
+            }
         },
         "cofb_core": {
-            "gds": "dir::macros/cofb_core.gds",
-            "lef": "dir::macros/cofb_core.lef"
+            "gds": [
+                "dir::macros/cofb_core.gds"
+            ],
+            "lef": [
+                "dir::macros/cofb_core.lef"
+            ],
+            "instances": {
+                "u_giftcofb": {
+                    "location": [
+                        1800,
+                        2500
+                    ],
+                    "orientation": "N"
+                }
+            },
+            "lib": {
+                "nom_tt_025C_1v80": [
+                    "dir::macros/cofb_core__nom_tt_025C_1v80.lib"
+                ],
+                "nom_ss_100C_1v60": [
+                    "dir::macros/cofb_core__nom_ss_100C_1v60.lib"
+                ],
+                "nom_ff_n40C_1v95": [
+                    "dir::macros/cofb_core__nom_ff_n40C_1v95.lib"
+                ],
+                "min_tt_025C_1v80": [
+                    "dir::macros/cofb_core__min_tt_025C_1v80.lib"
+                ],
+                "min_ss_100C_1v60": [
+                    "dir::macros/cofb_core__min_ss_100C_1v60.lib"
+                ],
+                "min_ff_n40C_1v95": [
+                    "dir::macros/cofb_core__min_ff_n40C_1v95.lib"
+                ],
+                "max_tt_025C_1v80": [
+                    "dir::macros/cofb_core__max_tt_025C_1v80.lib"
+                ],
+                "max_ss_100C_1v60": [
+                    "dir::macros/cofb_core__max_ss_100C_1v60.lib"
+                ],
+                "max_ff_n40C_1v95": [
+                    "dir::macros/cofb_core__max_ff_n40C_1v95.lib"
+                ]
+            }
         },
-        "sky130_sram_4kbyte_1rw1r_32x1024_8": {
-            "gds": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.gds",
-            "lef": "dir::macros/sky130_sram_4kbyte_1rw1r_32x1024_8.lef"
+        "sky130_sram_2kbyte_1rw1r_32x512_8": {
+            "gds": [
+                "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8.gds"
+            ],
+            "lef": [
+                "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8.lef"
+            ],
+            "lib": {
+                "nom_tt_025C_1v80": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "nom_ss_100C_1v60": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "nom_ff_n40C_1v95": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "min_tt_025C_1v80": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "min_ss_100C_1v60": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "min_ff_n40C_1v95": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "max_tt_025C_1v80": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "max_ss_100C_1v60": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ],
+                "max_ff_n40C_1v95": [
+                    "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"
+                ]
+            },
+            "instances": {
+                "u_boot_sram_0": {
+                    "location": [
+                        100,
+                        100
+                    ],
+                    "orientation": "N"
+                },
+                "u_boot_sram_1": {
+                    "location": [
+                        3600,
+                        700
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_0": {
+                    "location": [
+                        100,
+                        1300
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_1": {
+                    "location": [
+                        3600,
+                        1900
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_2": {
+                    "location": [
+                        100,
+                        2500
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_3": {
+                    "location": [
+                        3600,
+                        3100
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_4": {
+                    "location": [
+                        100,
+                        3700
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_5": {
+                    "location": [
+                        3600,
+                        4300
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_6": {
+                    "location": [
+                        100,
+                        4900
+                    ],
+                    "orientation": "N"
+                },
+                "u_sram_7": {
+                    "location": [
+                        3600,
+                        5500
+                    ],
+                    "orientation": "N"
+                }
+            }
         }
     },
-    "MACRO_PLACEMENT": {
-        "u_boot_sram": "50 50 N",
-        "u_sram_1": "50 650 N",
-        "u_sram_2": "50 1200 N",
-        "u_sram_3": "1600 50 N",
-        "u_sram_4": "1600 650 N",
-        "u_jambu": "50 1800 N",
-        "u_xoodyak": "850 1650 N",
-        "u_giftcofb": "1650 1650 N"
-    },
-    "FP_PDN_MACRO_HOOKS": [
+    "PDN_MACRO_CONNECTIONS": [
         "u_jambu VPWR VGND VPWR VGND",
         "u_xoodyak VPWR VGND VPWR VGND",
         "u_giftcofb VPWR VGND VPWR VGND",
-        "u_boot_sram vccd1 vssd1 VPWR VGND",
+        "u_boot_sram_0 vccd1 vssd1 VPWR VGND",
+        "u_boot_sram_1 vccd1 vssd1 VPWR VGND",
+        "u_sram_0 vccd1 vssd1 VPWR VGND",
         "u_sram_1 vccd1 vssd1 VPWR VGND",
         "u_sram_2 vccd1 vssd1 VPWR VGND",
         "u_sram_3 vccd1 vssd1 VPWR VGND",
-        "u_sram_4 vccd1 vssd1 VPWR VGND"
-    ]
+        "u_sram_4 vccd1 vssd1 VPWR VGND",
+        "u_sram_5 vccd1 vssd1 VPWR VGND",
+        "u_sram_6 vccd1 vssd1 VPWR VGND",
+        "u_sram_7 vccd1 vssd1 VPWR VGND"
+    ],
+    "CELL_GDS": [
+        "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8.gds",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds"
+    ],
+    "GRT_ALLOW_CONGESTION": true,
+    "GRT_OVERFLOW_ITERS": 150,
+    "PL_TARGET_DENSITY_PCT": 20,
+    "GRT_ADJUSTMENT": 0.2,
+    "PL_RESIZER_DESIGN_OPTIMIZATIONS": true,
+    "GLB_RESIZER_DESIGN_OPTIMIZATIONS": true,
+    "PL_RESIZER_HOLD_SLACK_MARGIN": 0.05,
+    "PL_RESIZER_HOLD_MAX_BUFFER_PCT": 30,
+    "PL_RESIZER_SETUP_SLACK_MARGIN": 0.05,
+    "IGNORE_DISCONNECTED_MODULES": [
+        "sky130_sram_2kbyte_1rw1r_32x512_8",
+        "cofb_core",
+        "xoodyakcore",
+        "tinyjambu_core"
+    ],
+    "EXTRA_SPICE_MODELS": [
+        "dir::macros/tinyjambu_core.spice",
+        "dir::macros/xoodyakcore.spice",
+        "dir::macros/cofb_core.spice",
+        "/home/ultralab/shtp/by_kim/openlane/designs/sky130_sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8/sky130_sram_2kbyte_1rw1r_32x512_8.lvs.sp",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_ef_sc_hd__decap_12.spice",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_ef_sc_hd__fill_4.spice",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_ef_sc_hd__fill_8.spice",
+        "/home/ultralab/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_ef_sc_hd__fill_12.spice"
+    ],
+    "PRIMARY_GDSII_STREAMOUT_TOOL": "klayout",
+    "MAGIC_EXT_ABSTRACT_CELLS": "sky130_sram_2kbyte_1rw1r_32x512_8 tinyjambu_core xoodyakcore cofb_core",
+    "RUN_LVS": true,
+    "RUN_KLAYOUT_XOR": false,
+    "RUN_KLAYOUT_DRC": true,
+    "RUN_LINTER": true,
+    "RUN_MAGIC_WRITE_LEF": true,
+    "MAGIC_WRITE_FULL_LEF": true,
+    "RUN_ANTENNA_REPAIR": false,
+    "ERROR_ON_MAGIC_DRC": false,
+    "ERROR_ON_ILLEGAL_OVERLAPS": false,
+    "ERROR_ON_LINTER_ERRORS": false,
+    "GRT_ANTENNA_ITERS": 0,
+    "SYNTH_POWER_DEFINE": "USE_POWER_PINS",
+    "FP_PDN_CHECK_NODES": false
 }
