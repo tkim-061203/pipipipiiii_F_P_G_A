@@ -1,7 +1,8 @@
 `timescale 1 ns / 1 ps
 // MEMORY MAP
-//   0x0000_0000 – 0x0000_0FFF  Boot BRAM  4 KB  (bootloader, RO)
-//   0x0001_0000 – 0x0001_FFFF  App  BRAM 16 KB  (loaded from SD)
+//   0x0000_0000 – 0x0000_07FF  Boot SRAM  2 KB  (#0, half of bootloader)
+//   0x0000_0800 – 0x0000_0FFF  Boot SRAM  2 KB  (#1, half of bootloader)
+//   0x0001_0000 – 0x0001_3FFF  App  SRAM 16 KB  (8 x 2 KB, loaded from SD)
 //   0x1000_0000                LED  out_byte     W
 //   0x1000_0004                UART TX Data      W
 //   0x1000_0008                UART RX Data      R
@@ -73,8 +74,8 @@ module system (
 );
 
     parameter FAST_MEMORY = 1;
-    parameter BOOT_SIZE   = 1024;   // 4 KB in words
-    parameter APP_SIZE    = 4096;  // 16 KB in words
+    parameter BOOT_SIZE   = 1024;   // 4 KB total bootloader (2 x 2KB SRAM)
+    parameter APP_SIZE    = 4096;   // 16 KB app (8 x 2KB SRAM)
 
     // --------------------------------------------------------
     // Power-on reset
@@ -196,9 +197,6 @@ module system (
     wire         jb_valid, jb_done;
 
     tinyjambu_core u_jambu (
-`ifdef USE_POWER_PINS
-        .VPWR(VPWR), .VGND(VGND),
-`endif
         .clk        (clk),      .rst_n      (resetn),
         .ena        (jb_ena),   .sel_type   (jb_sel_type),
         .key        (jb_key),   .nonce      (jb_nonce),
@@ -228,10 +226,6 @@ module system (
     wire         xd_valid, xd_done;
 
     xoodyakcore u_xoodyak (
-`ifdef USE_POWER_PINS
-        .VPWR(VPWR), .VGND(VGND),
-`endif
-        .clk        (clk),      .rst_n      (resetn),
         .ena        (xd_ena),   .restart    (1'b0),
         .sel_type   (xd_sel_type),
         .key        (xd_key),   .nonce      (xd_nonce),
@@ -264,10 +258,6 @@ module system (
     wire         gc_data_out_valid;
 
     cofb_core u_giftcofb (
-`ifdef USE_POWER_PINS
-        .VPWR(VPWR), .VGND(VGND),
-`endif
-        .clk          (clk),           .rst_n        (resetn),
         .start        (gc_start),      .decrypt_mode (gc_decrypt_mode),
         .key          (gc_key),        .nonce        (gc_nonce),
         .ad_data      (gc_ad),         .ad_total_len (gc_ad_length),
@@ -321,22 +311,84 @@ module system (
         .trace_valid(),             .trace_data ()
     );
 
-    // Boot SRAM  4 KB
-    wire [31:0] boot_sram_dout;
-    sky130_sram_4kbyte_1rw1r_32x1024_8 u_boot_sram (
-        `ifdef USE_POWER_PINS .vccd1(VPWR), .vssd1(VGND), `endif
-        .clk0(clk), .csb0(!(mem_la_addr < 32'h0000_1000)),
-        .web0(!mem_la_write), .wmask0(mem_la_wstrb), .addr0(mem_la_addr[11:2]), .din0(mem_la_wdata), .dout0(boot_sram_dout),
-        .clk1(clk), .csb1(1'b1), .addr1(10'b0), .dout1()
+    // Boot SRAM  2 x 2 KB = 4 KB total (bootloader)
+    //   boot_0: 0x0000_0000 – 0x0000_07FF  (bit[11]=0)
+    //   boot_1: 0x0000_0800 – 0x0000_0FFF  (bit[11]=1)
+    wire [31:0] boot_sram0_dout, boot_sram1_dout;
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_boot_sram_0 (
+        .clk0(clk), .csb0(!(mem_la_addr < 32'h0000_0800)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(boot_sram0_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
     );
 
-    // App SRAM  16 KB
-    wire [31:0] app_sram_dout;
-    sky130_sram_16kbyte_1rw1r_32x4096_8 u_app_sram (
-        `ifdef USE_POWER_PINS .vccd1(VPWR), .vssd1(VGND), `endif
-        .clk0(clk), .csb0(!(mem_la_addr[31:16] == 16'h0001 && mem_la_addr[15:14] == 2'b00)),
-        .web0(!mem_la_write), .wmask0(mem_la_wstrb), .addr0(mem_la_addr[13:2]), .din0(mem_la_wdata), .dout0(app_sram_dout),
-        .clk1(clk), .csb1(1'b1), .addr1(12'b0), .dout1()
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_boot_sram_1 (
+        .clk0(clk), .csb0(!(mem_la_addr[11] && mem_la_addr < 32'h0000_1000)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(boot_sram1_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    // App SRAM  8 x 2 KB = 16 KB  (0x0001_0000 – 0x0001_3FFF)
+    //   sram_n: selected by mem_la_addr[13:11] == n
+    wire [31:0] sram0_dout, sram1_dout, sram2_dout, sram3_dout;
+    wire [31:0] sram4_dout, sram5_dout, sram6_dout, sram7_dout;
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_0 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd0)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram0_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_1 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd1)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram1_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_2 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd2)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram2_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_3 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd3)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram3_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_4 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd4)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram4_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_5 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd5)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram5_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_6 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd6)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram6_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
+    );
+
+    sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_7 (
+        .clk0(clk), .csb0(!(mem_la_addr[31:14] == 18'h4 && mem_la_addr[13:11] == 3'd7)),
+        .web0(!mem_la_write), .wmask0(mem_la_wstrb),
+        .addr0(mem_la_addr[10:2]), .din0(mem_la_wdata), .dout0(sram7_dout),
+        .clk1(clk), .csb1(1'b1), .addr1(9'b0), .dout1()
     );
 
     reg [31:0] m_read_data;
@@ -391,12 +443,24 @@ module system (
                     else                   tx_busy      <= 0;
                 end
 
-                // ---- Default BRAM read (before peripheral override) ----
-                if (mem_la_addr < 32'h0000_1000)
-                    mem_rdata <= boot_sram_dout;
-                else if (mem_la_addr[31:16] == 16'h0001 && mem_la_addr[15:14] == 2'b00)
-                    mem_rdata <= app_sram_dout;
-                else
+                // ---- Default SRAM read (before peripheral override) ----
+                if (mem_la_addr < 32'h0000_0800)
+                    mem_rdata <= boot_sram0_dout;
+                else if (mem_la_addr < 32'h0000_1000)
+                    mem_rdata <= boot_sram1_dout;
+                else if (mem_la_addr[31:14] == 18'h4) begin
+                    case (mem_la_addr[13:11])
+                        3'd0: mem_rdata <= sram0_dout;
+                        3'd1: mem_rdata <= sram1_dout;
+                        3'd2: mem_rdata <= sram2_dout;
+                        3'd3: mem_rdata <= sram3_dout;
+                        3'd4: mem_rdata <= sram4_dout;
+                        3'd5: mem_rdata <= sram5_dout;
+                        3'd6: mem_rdata <= sram6_dout;
+                        3'd7: mem_rdata <= sram7_dout;
+                        default: mem_rdata <= 32'h0000_0000;
+                    endcase
+                end else
                     mem_rdata <= 32'h0000_0000;
 
                 // ---- Peripheral READ ----
@@ -596,20 +660,32 @@ module system (
                     else                   tx_busy      <= 0;
                 end
 
-                // Default BRAM read (registered, appears in mem_rdata next cycle)
-                if (mem_addr < 32'h0000_1000)
-                    m_read_data <= boot_sram_dout;
-                else if (mem_addr[31:16] == 16'h0001 && mem_addr[15:14] == 2'b00)
-                    m_read_data <= app_sram_dout;
-                else
+                // Default SRAM read (registered, appears in mem_rdata next cycle)
+                if (mem_addr < 32'h0000_0800)
+                    m_read_data <= boot_sram0_dout;
+                else if (mem_addr < 32'h0000_1000)
+                    m_read_data <= boot_sram1_dout;
+                else if (mem_addr[31:14] == 18'h4) begin
+                    case (mem_addr[13:11])
+                        3'd0: m_read_data <= sram0_dout;
+                        3'd1: m_read_data <= sram1_dout;
+                        3'd2: m_read_data <= sram2_dout;
+                        3'd3: m_read_data <= sram3_dout;
+                        3'd4: m_read_data <= sram4_dout;
+                        3'd5: m_read_data <= sram5_dout;
+                        3'd6: m_read_data <= sram6_dout;
+                        3'd7: m_read_data <= sram7_dout;
+                        default: m_read_data <= 32'h0000_0000;
+                    endcase
+                end else
                     m_read_data <= 32'h0000_0000;
                 mem_rdata <= m_read_data;
             end
 
             (* parallel_case *)
             case (1)
-                // --- BRAM reads ---
-                mem_valid && !mem_ready && !mem_wstrb && (mem_addr < 32'h0000_1000 || (mem_addr[31:16] == 16'h0001 && mem_addr[15:14] == 2'b00)):
+                // --- SRAM reads ---
+                mem_valid && !mem_ready && !mem_wstrb && (mem_addr < 32'h0000_1000 || (mem_addr[31:14] == 18'h4)):
                     m_read_en <= 1;
                 // --- Peripheral reads ---
                 mem_valid && !mem_ready && !mem_wstrb && mem_addr==32'h1000_0008:
@@ -686,7 +762,7 @@ module system (
                     begin mem_rdata<=gc_tag_out[127:96]; mem_ready<=1; end
                 // --- WRITES ---
                 // App SRAM (Handled by macro)
-                mem_valid && !mem_ready && |mem_wstrb && mem_addr[31:16]==16'h0001 && mem_addr[15:14] == 2'b00: begin
+                mem_valid && !mem_ready && |mem_wstrb && mem_addr[31:14]==18'h4: begin
                     mem_ready<=1;
                 end
                 mem_valid && !mem_ready && |mem_wstrb && mem_addr==32'h1000_0000:

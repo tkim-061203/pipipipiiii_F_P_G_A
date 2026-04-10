@@ -3,15 +3,17 @@
     "VERILOG_FILES": [
         "dir::../picosoc/src/xoodyakcore.v",
         "dir::../picosoc/src/xoodoo.v",
-        "dir::../picosoc/src/xoodoo_round.v",
+        "dir::../picosoc/src/xoodoo_n_rounds.v",
         "dir::../picosoc/src/xoodoo_rc.v",
-        "dir::../picosoc/src/xoodoo_n_rounds.v"
+        "dir::../picosoc/src/xoodoo_round.v"
     ],
-    "CLOCK_PERIOD": 10,
+    "CLOCK_PERIOD": 20,
     "CLOCK_PORT": "clk",
     "CLOCK_NET": "clk",
     "FP_SIZING": "absolute",
     "DIE_AREA": "0 0 850 850",
-    "FP_CORE_UTIL": 40,
+    "PL_TARGET_DENSITY_PCT": 35,
+    "ERROR_ON_LINTER_ERRORS": false,
+    "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
     "MAX_THREADS": 2
 }

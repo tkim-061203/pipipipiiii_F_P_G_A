@@ -1,0 +1,16 @@
+word_size = 32
+num_words = 1024
+tech_name = "sky130"
+words_per_row = 4
+num_spare_cols = 1
+num_spare_rows = 1
+process_corners = ["TT"]
+supply_voltages = [1.8]
+temperatures = [25]
+output_path = "macros/sky130_sram_4kb_drclvs"
+output_name = "sky130_sram_4kbyte_1rw_32x1024_8"
+drc_name = "magic"
+lvs_name = "netgen"
+pex_name = "magic"
+analytical_delay = True
+nominal_corner_only = True
