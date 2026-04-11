@@ -21,7 +21,44 @@ The project extends the standard PicoSoC architecture by integrating a dedicated
 
 ---
 
-## 2. System Architecture
+## 2. Beginner's Guide & Tutorial
+
+Welcome to PicoSoC! If you are new to SoC (System-on-Chip) design or hardware-software co-design, this guide will help you understand how this project works.
+
+### 🧠 Core Concepts
+
+A SoC is like a miniature computer on a single chip. It consists of:
+1.  **The CPU (The Brain)**: Processes instructions. Here, we use the **PicoRV32**.
+2.  **Memory (The Storage)**: Where code and data live.
+    - **ROM (Read-Only Memory)**: Contains permanent instructions (like a bootloader).
+    - **RAM (Random Access Memory)**: Fast, temporary storage for your program's variables and stack.
+3.  **Peripherals (The Tools)**: Specialized hardware for specific tasks (e.g., UART for communication, Crypto Accelerators for encryption).
+4.  **Interconnect (The Nervous System)**: The bus that allows the CPU to talk to the Memory and Peripherals.
+
+### 🗺️ How the CPU Talks: Memory Mapping
+
+In this SoC, everything is **Memory-Mapped**. This means the CPU doesn't have special "commands" to talk to the UART or the Crypto cores. Instead, it just writes to or reads from specific **addresses**.
+
+- If the CPU writes to `0x0001_0000`, it is saving data in **RAM**.
+- If the CPU writes to `0x3000_0000`, it is sending a command to the **TinyJAMBU accelerator**.
+
+Think of the Memory Map as a city directory: different addresses lead to different "buildings" (devices).
+
+### 📁 Understanding the Files
+
+To work on this project, you need to know which files do what:
+
+| Category | Files | Description |
+| :--- | :--- | :--- |
+| **Hardware (RTL)** | `picorv32.v`, `picosoc/*.v`, `tinyjambu/*.v`, etc. | The "blueprints" written in Verilog. These define the actual digital circuits. |
+| **Software (Firmware)** | `firmware/*.c`, `firmware/*.S` | The "instructions" written in C or Assembly that run on the CPU. |
+| **The Linker Map** | `firmware/riscv.ld` | A critical file that tells the software *where* the RAM and ROM are located in the hardware. |
+| **Simulation** | `testbench.v`, `Makefile` | Tools to run a "virtual" version of your chip on your computer to see if it works. |
+| **ASIC Flow** | `openlane/` | The instructions used to turn the Verilog blueprints into a real silicon chip. |
+
+---
+
+## 3. System Architecture
 
 ### Memory Map
 
@@ -39,7 +76,7 @@ The system uses a 32-bit address space. All crypto cores are memory-mapped for e
 
 ---
 
-## 3. Cryptographic Hardware Accelerators
+## 4. Cryptographic Hardware Accelerators
 
 ### TinyJAMBU AEAD
 
@@ -70,11 +107,11 @@ A block-cipher based AEAD finalist in the NIST LWC competition.
 
 ---
 
-## 4. Software Development Stack
+## 5. Software Development Stack
 
 ### Firmware Implementation
 
-The system firmware (`scripts/vivado/firmware.c`) provides a hardware abstraction layer (HAL) for the accelerators.
+The system firmware (`firmware/`) provides a hardware abstraction layer (HAL) for the accelerators.
 
 Example usage for Xoodyak:
 
@@ -105,7 +142,7 @@ This command performs the following:
 
 ---
 
-## 5. ASIC Flow (OpenLane2)
+## 6. ASIC Flow (OpenLane2)
 
 The repository is structured to support a complete digital backend flow.
 
@@ -125,17 +162,17 @@ The `config.json` file is tuned for the SkyWater 130nm process (sky130):
 
 ---
 
-## 6. Files in the Repository
+## 7. Files in the Repository
 
 - `picorv32.v`: The base RISC-V core.
 - `picosoc/`: Hardware modules (Wrappers and Crypto RTL).
-- `scripts/vivado/`: Standard simulation and FPGA scripts.
+- `scripts/`: Simulation and FPGA scripts.
 - `openlane/`: ASIC flow and synchronized releases.
 - `README.md`: This document.
 
 ---
 
-## 7. Credits and License
+## 8. Credits and License
 
 - **PicoRV32**: Clifford Wolf (ISC License).
 - **PicoSoC**: Clifford Wolf (ISC License).

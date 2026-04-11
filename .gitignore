@@ -44,3 +44,4 @@ openlane/designs/*/runs/*/*
 openlane/designs/*/runs/*
 !openlane/designs/*/runs/*/
 !openlane/designs/*/runs/*/final/
+.claude
